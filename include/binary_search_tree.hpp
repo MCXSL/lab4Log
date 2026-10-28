@@ -2,6 +2,7 @@
 
 #include <cstddef>
 #include <iosfwd>
+#include <string>
 
 enum class DuplicatePolicy {
     Allow,
@@ -23,7 +24,7 @@ public:
     [[nodiscard]] std::size_t count(int value) const noexcept;
     [[nodiscard]] std::size_t size() const noexcept;
 
-    // Дерево выводится повёрнутым на 90 градусов, корень слева.
+    // Дерево выводится повёрнутым на 90 градусов, с линиями между узлами.
     void print(std::ostream& output) const;
     void clear() noexcept;
 
@@ -35,7 +36,8 @@ private:
     };
 
     static void destroySubtree(Node* node) noexcept;
-    static void printSubtree(const Node* node, std::size_t depth, std::ostream& output);
+    static void printSubtree(const Node* node, std::string& prefix, bool leftChild,
+                             std::ostream& output);
 
     Node* root_ = nullptr;
     std::size_t size_ = 0;

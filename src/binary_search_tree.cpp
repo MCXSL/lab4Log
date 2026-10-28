@@ -67,7 +67,10 @@ void BinarySearchTree::print(std::ostream& output) const {
         output << "(пусто)\n";
         return;
     }
-    printSubtree(root_, 0, output);
+    std::string prefix;
+    printSubtree(root_->right, prefix, false, output);
+    output << root_->data << '\n';
+    printSubtree(root_->left, prefix, true, output);
 }
 
 void BinarySearchTree::clear() noexcept {
@@ -85,12 +88,23 @@ void BinarySearchTree::destroySubtree(Node* node) noexcept {
     delete node;
 }
 
-void BinarySearchTree::printSubtree(const Node* node, std::size_t depth,
-                                  std::ostream& output) {
+void BinarySearchTree::printSubtree(const Node* node, std::string& prefix,
+                                  bool leftChild, std::ostream& output) {
     if (node == nullptr) {
         return;
     }
-    printSubtree(node->right, depth + 1, output);
-    output << std::string(depth * 4, ' ') << node->data << '\n';
-    printSubtree(node->left, depth + 1, output);
+    const std::size_t prefixLength = prefix.size();
+    if (node->right != nullptr) {
+        prefix += leftChild ? "│   " : "    ";
+        printSubtree(node->right, prefix, false, output);
+        prefix.resize(prefixLength);
+    }
+
+    output << prefix << (leftChild ? "└── " : "┌── ") << node->data << '\n';
+
+    if (node->left != nullptr) {
+        prefix += leftChild ? "    " : "│   ";
+        printSubtree(node->left, prefix, true, output);
+        prefix.resize(prefixLength);
+    }
 }
