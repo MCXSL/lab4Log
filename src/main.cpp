@@ -35,22 +35,38 @@ bool readInteger(const std::string& prompt, int& value) {
 }
 
 void printTrees(const BinarySearchTree& withDuplicates,
-                const BinarySearchTree& withoutDuplicates) {
+                const BinarySearchTree& withoutDuplicates, TreeOrientation orientation) {
     std::cout << "\nДерево с повторами (узлов: " << withDuplicates.size() << "):\n";
-    withDuplicates.print(std::cout);
+    withDuplicates.print(std::cout, orientation);
     std::cout << "\nДерево без повторов (узлов: " << withoutDuplicates.size() << "):\n";
-    withoutDuplicates.print(std::cout);
-    std::cout << "\nКорень слева; правое поддерево сверху, левое снизу.\n";
+    withoutDuplicates.print(std::cout, orientation);
+    std::cout << "\nУровень узла указан в квадратных скобках. Корень — уровень 0.\n";
+    if (orientation == TreeOrientation::Horizontal) {
+        std::cout << "Корень слева, правое поддерево сверху, левое снизу.\n";
+    } else {
+        std::cout << "Корень сверху, левое поддерево слева, правое справа.\n";
+    }
 }
 
 void showSearch(const BinarySearchTree& tree, const std::string& label, int value) {
+    const auto matches = tree.findMatches(value);
     std::cout << label << ": значение " << value
-              << (tree.contains(value) ? " найдено.\n" : " не найдено.\n");
+              << (matches.levels.empty() ? " не найдено" : " найдено")
+              << ", вхождений = " << matches.levels.size() << '\n';
+
+    for (const auto level : matches.levels) {
+        std::cout << "  Уровень " << level << ", путь: корень";
+        for (std::size_t step = 0; step < level; ++step) {
+            std::cout << (matches.directions[step] == 'L' ? " → влево" : " → вправо");
+        }
+        std::cout << '\n';
+    }
 }
 
 int run() {
     BinarySearchTree withDuplicates(DuplicatePolicy::Allow);
     BinarySearchTree withoutDuplicates(DuplicatePolicy::Reject);
+    auto orientation = TreeOrientation::Horizontal;
 
     std::cout << "Лабораторная работа № 4. Бинарное дерево поиска\n"
               << "Введите целые числа. -1 завершает начальное построение.\n"
@@ -60,7 +76,7 @@ int run() {
     while (true) {
         if (!readInteger("Число: ", value)) {
             std::cout << "\nВвод завершён.\n";
-            printTrees(withDuplicates, withoutDuplicates);
+            printTrees(withDuplicates, withoutDuplicates, orientation);
             return 0;
         }
         if (value == -1) {
@@ -70,7 +86,7 @@ int run() {
         withoutDuplicates.insert(value);
     }
 
-    printTrees(withDuplicates, withoutDuplicates);
+    printTrees(withDuplicates, withoutDuplicates, orientation);
 
     while (true) {
         std::cout << "\n1 — вывести деревья\n"
@@ -78,6 +94,7 @@ int run() {
                   << "3 — подсчитать вхождения\n"
                   << "4 — добавить число в оба дерева\n"
                   << "5 — очистить оба дерева\n"
+                  << "6 — выбрать ориентацию дерева\n"
                   << "0 — выход\n";
 
         int command = 0;
@@ -88,7 +105,7 @@ int run() {
 
         switch (command) {
         case 1:
-            printTrees(withDuplicates, withoutDuplicates);
+            printTrees(withDuplicates, withoutDuplicates, orientation);
             break;
         case 2:
             if (!readInteger("Искомое значение: ", value)) {
@@ -122,8 +139,21 @@ int run() {
             withoutDuplicates.clear();
             std::cout << "Оба дерева очищены.\n";
             break;
+        case 6: {
+            int choice = 0;
+            if (!readInteger("Ориентация (1 — горизонтальная, 2 — вертикальная): ", choice)) {
+                return 0;
+            }
+            if (choice != 1 && choice != 2) {
+                std::cout << "Выберите 1 или 2.\n";
+                break;
+            }
+            orientation = choice == 1 ? TreeOrientation::Horizontal : TreeOrientation::Vertical;
+            printTrees(withDuplicates, withoutDuplicates, orientation);
+            break;
+        }
         default:
-            std::cout << "Нет такого пункта меню. Выберите число от 0 до 5.\n";
+            std::cout << "Нет такого пункта меню. Выберите число от 0 до 6.\n";
             break;
         }
     }

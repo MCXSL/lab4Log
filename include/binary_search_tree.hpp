@@ -3,10 +3,21 @@
 #include <cstddef>
 #include <iosfwd>
 #include <string>
+#include <vector>
 
 enum class DuplicatePolicy {
     Allow,
     Reject
+};
+
+enum class TreeOrientation {
+    Horizontal,
+    Vertical
+};
+
+struct TreeSearchResult {
+    std::string directions; // Путь от корня: L — влево, R — вправо.
+    std::vector<std::size_t> levels;
 };
 
 class BinarySearchTree {
@@ -22,10 +33,11 @@ public:
     bool insert(int value);
     [[nodiscard]] bool contains(int value) const noexcept;
     [[nodiscard]] std::size_t count(int value) const noexcept;
+    [[nodiscard]] TreeSearchResult findMatches(int value) const;
     [[nodiscard]] std::size_t size() const noexcept;
 
-    // Дерево выводится повёрнутым на 90 градусов, с линиями между узлами.
-    void print(std::ostream& output) const;
+    void print(std::ostream& output,
+               TreeOrientation orientation = TreeOrientation::Horizontal) const;
     void clear() noexcept;
 
 private:
@@ -37,7 +49,8 @@ private:
 
     static void destroySubtree(Node* node) noexcept;
     static void printSubtree(const Node* node, std::string& prefix, bool leftChild,
-                             std::ostream& output);
+                             std::size_t level, std::ostream& output);
+    void printVertical(std::ostream& output) const;
 
     Node* root_ = nullptr;
     std::size_t size_ = 0;
